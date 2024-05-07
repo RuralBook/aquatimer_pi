@@ -1,10 +1,10 @@
-package com.tobiask.utils
+package com.tobiask.services
 
 import com.tobiask.model.Measurement
 import java.time.LocalTime
 import kotlin.random.Random
 
-object DataUtil {
+object DataService {
     var measurements = mutableListOf<Measurement>()
 
     //Debug shit

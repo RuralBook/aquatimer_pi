@@ -1,15 +1,17 @@
 package com.tobiask
 
-import com.tobiask.measurement.MeasurementHandler
-import com.tobiask.webSocket.WebSocketLauncher
+import com.tobiask.services.MeasurementService
+import com.tobiask.services.WebSocketService
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+
+lateinit var webSocketService: WebSocketService
 
 suspend fun main() {
     coroutineScope {
         //starting WebSocket
-        launch {  WebSocketLauncher.main() }
+        launch {  WebSocketService.launchAndSetInstance() }
         //starting Measurement Handler
-        launch { MeasurementHandler.main(); }
+        launch { MeasurementService.main(); }
     }
 }
