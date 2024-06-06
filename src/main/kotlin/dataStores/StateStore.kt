@@ -1,7 +1,7 @@
-package com.tobiask.services
+package com.tobiask.dataStores
 
 import com.tobiask.model.State
 
-object StateService {
+object StateStore {
     var state: State = State.MEASURING
 }

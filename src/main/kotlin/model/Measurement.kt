@@ -1,9 +1,14 @@
 package com.tobiask.model
 
-import java.time.LocalTime
+import kotlinx.serialization.Serializable
 
-
+@Serializable
 data class Measurement(
-    val time: LocalTime,
-    val measurement: Int
-)
+    val time: String,
+    val measurement: Double
+){
+    override fun toString(): String {
+        val returnString = "${this.time}@${this.measurement}"
+        return returnString
+    }
+}

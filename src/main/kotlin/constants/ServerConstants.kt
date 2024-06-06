@@ -1,6 +1,8 @@
 package com.tobiask.constants
 
-object ServerConstants {
+class ServerConstants {
+    companion object{
     val port = 6969
-    val ip = "192.168.178.142"
+    val ip = "0.0.0.0"
+    }
 }
