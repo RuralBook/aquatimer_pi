@@ -10,31 +10,32 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.Json
 import com.tobiask.webSocketService
-//{"actionName":"performAction","payload":{"toggleManualWatering":true},"key":"FLORIAN"}           
+
 class PerformActionUtil {
     companion object {
         fun waterPump(action: String){
-            debugUtil.log(action)
             when(action.trim('"')){
                 "true" -> {
+                    debugUtil.log(action)                  
                     if(ModeStore.mode == Mode.MANUALLY) {
                         waterPumpService.shouldWater = true;
                         val responseData = JsonObject(buildMap{
-                            put("performingAction", Json.encodeToJsonElement("performingWatering"))
+                            put("active", Json.encodeToJsonElement("true"))
                         })
-                        val response = JsonFactory.createFullMessage("publishAction", responseData)
+                        val response = JsonFactory.createFullMessage("publishPumpState", responseData)
                         webSocketService.broadcast(response)
                     } else {
                         createErrMessage("the current mode isn't set to manual")
                     }
                 }
                 "false" -> {
+                    debugUtil.log(action)
                     if(ModeStore.mode == Mode.MANUALLY) {
                         waterPumpService.shouldStop = true;
                         val responseData = JsonObject(buildMap{
-                            put("performingAction", Json.encodeToJsonElement("stopping watering"))
+                            put("active", Json.encodeToJsonElement("false"))
                         })
-                        val response = JsonFactory.createFullMessage("publishAction", responseData)
+                        val response = JsonFactory.createFullMessage("publishPumpState", responseData)
                         webSocketService.broadcast(response)
                     } else {
                         createErrMessage("the current mode isn't set to manual")

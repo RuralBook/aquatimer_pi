@@ -7,9 +7,9 @@ import kotlinx.serialization.json.JsonObject
 
 class DataUtil {
     companion object {
-        fun getData(command: String): JsonObject{
+        fun getData(command: String){
             debugUtil.log("passed command  =  $command")
-            return when(command.trim('"') ){
+            when(command.trim('"') ){
                 "measurements" -> {
                     debugUtil.log(DataStore.measurements.toString())
                     JsonFactory.createMessage("measurement", DataStore.measurements.toString())

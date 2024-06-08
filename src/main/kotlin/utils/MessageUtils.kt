@@ -9,38 +9,41 @@ import org.java_websocket.WebSocket
 import com.tobiask.ModeStore
 import com.tobiask.adminDataStore
 import com.tobiask.webSocketService
+import kotlinx.serialization.json.JsonElement
+import javax.swing.text.Element
 
 
 class MessageUtils {
     companion object {
-        fun modeCommands(payload: JsonObject){
-            if(payload["setMode"] !=null){
-                ModeUtil.setNewMode(payload["setMode"].toString())
+        fun modeCommands(payload: JsonObject, conn: WebSocket){
+            if(payload["newModeId"] !=null){
+                ModeUtil.setNewMode(payload["newModeId"].toString(), conn)
                 val answerData = JsonObject(buildMap{
                     put("currentMode", Json.encodeToJsonElement(ModeStore.mode))
                 })
-                val answer = JsonFactory.createFullMessage("broadcastedMode", answerData)
+                val answer = JsonFactory.createFullMessage("publishMode", answerData)
                 webSocketService.broadcast(answer)
             } else {
                 val errResponse = createErrMessage("invalid command")
             }
         }
-        fun dataCommands(payload: JsonObject): JsonObject{
-            return if(payload["getData"] != null){
+        fun dataCommands(payload: JsonObject) {
+            if(payload["getData"] != null){
                 DataUtil.getData(payload["getData"].toString())
             } else {
                 createErrMessage("invalid command")
             }
         }
         fun setMeasurementInterval(payload: JsonObject){
-            val setMeasurementInterval = "setMeasurementInteval"
+            val setMeasurementInterval = "MeasurementIntervalMinutes"
             if(payload[setMeasurementInterval] != null){
                 SettingsUtil.setMeasurementTimer(payload[setMeasurementInterval].toString())
             }
+            SettingsUtil.broadcastNewMeasurementTimerSetting()
         }
 
         fun setManualModeSettings(payload: JsonObject){
-            val setWateringDurationManually = "setWateringDurationManually"
+            val setWateringDurationManually = "manualWateringDuration"
             if (payload[setWateringDurationManually] != null){
                 SettingsUtil.setWateringDurationManually(payload[setWateringDurationManually].toString())
             }
@@ -48,12 +51,10 @@ class MessageUtils {
         }
 
         fun setTimerModeSettings(payload: JsonObject){
-            val setTimedInterval =  "setTimedInterval"
-
-            val setWateringDurationTimed = "setWateringDurationTimed"
+            val setTimedInterval =  "timerInterval"
+            val setWateringDurationTimed = "timerWateringDuration"
 
             if(payload[setTimedInterval] != null &&
-
                 payload[setWateringDurationTimed] != null
             ){
                 SettingsUtil.setIntervalTimer(payload[setTimedInterval].toString())
@@ -63,7 +64,7 @@ class MessageUtils {
         }
 
         fun setIntelligentModeSettings(payload: JsonObject){
-            val newIdealValue = "idealValue"
+            val newIdealValue = "ideal"
             val newThreshold = "threshold"
             if(payload[newThreshold] != null && payload[newIdealValue] != null){
                 SettingsUtil.setNewThreshold(payload[newThreshold].toString())
@@ -73,16 +74,17 @@ class MessageUtils {
         }
 
         fun performAction(payload: JsonObject){
-            if (payload["toggleManualWatering"] != null){
-                PerformActionUtil.waterPump(payload["toggleManualWatering"].toString());
+            if (payload["active"] != null){
+                PerformActionUtil.waterPump(payload["active"].toString());
             } else {
+
                 val errResponse = createErrMessage("invalid command")
             }
         }
 
         fun configPlantData(payload: JsonObject){
-            val plantSoilMass = "soilMass"
-            val plantWaterPumpGPS = "waterPumpGPS"
+            val plantSoilMass = "soilWeightG"
+            val plantWaterPumpGPS = "flowRateGPS"
 
             if(payload[plantSoilMass] != null && payload[plantWaterPumpGPS] != null){
                 PlantConfigurationUtil.setSoilWeight(payload[plantSoilMass].toString())

@@ -1,16 +1,16 @@
 package com.tobiask.services
 
 import com.pi4j.io.gpio.digital.DigitalState
-import com.tobiask.settings
-import com.tobiask.debugUtil
-import com.tobiask.lastWatered
+import com.tobiask.*
 import com.tobiask.model.Mode
 import com.tobiask.model.State
-import com.tobiask.output
 import com.tobiask.dataStores.DataStore
-import com.tobiask.ModeStore
 import com.tobiask.dataStores.StateStore
+import com.tobiask.utils.JsonFactory
 import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.encodeToJsonElement
 import java.time.LocalTime
 
 class WaterPumpService {
@@ -18,8 +18,10 @@ class WaterPumpService {
     var shouldStop = false
 
     suspend fun mainLoop(){
-        debugUtil.log("[BOOT-INFO] started water pump service")
+        debugUtil.log("[BOOT-INFO] started water pump service1")
+        try{
                 while (true) {
+                    debugUtil.log(shouldWater.toString())
                     val currentMode = ModeStore.mode
                     when (currentMode) {
                         Mode.MANUALLY -> {
@@ -37,11 +39,12 @@ class WaterPumpService {
                             if (lastMeasurement != null && lastMeasurement > settings.threshold &&
                                 StateStore.state != State.MEASURING_AFTER_WATERING
                             ) {
-                                performWatering(false)
+                                performWatering(null)
                                 debugUtil.log("[ACTION] watering Timed...")
                                 shouldStop = false
                                 setStateAfterWatering()
-                            } else {
+                            } else if(lastWatered.plusMinutes(10).isBefore(LocalTime.now())){
+                                StateStore.state = State.MEASURING
                                 //debugUtil.log("[INFO] STATE: ${StateStore.state}, VAL: ${DataStore.measurements.lastOrNull()?.measurement}")
                             }
                         }
@@ -57,10 +60,13 @@ class WaterPumpService {
                     }
                     delay(500)
                 }
+        }catch(e:Exception){
+            debugUtil.log(e.toString())
+        }
     }
 
     private fun performWatering(isManually: Boolean?){
-        var duration = when(isManually){
+        val duration = when(isManually){
             null -> {
                 settings.getIntelligentWateringDuration()
             }
@@ -72,10 +78,15 @@ class WaterPumpService {
             }
         }
         val startTime = LocalTime.now()
-        while(!shouldStop && LocalTime.now().minusSeconds(duration.toLong()).isBefore(startTime)){
-            output.state(DigitalState.HIGH)
-        }
-        output.state(DigitalState.LOW)
+            while (!shouldStop && LocalTime.now().minusSeconds(duration.toLong()).isBefore(startTime)) {
+                output.state(DigitalState.HIGH)
+            }
+            output.state(DigitalState.LOW)
+        val responseData = JsonObject(buildMap{
+            put("active", Json.encodeToJsonElement("false"))
+        })
+        val response = JsonFactory.createFullMessage("publishPumpState", responseData)
+        webSocketService.broadcast(response)
     }
 
     private fun setStateAfterWatering(){

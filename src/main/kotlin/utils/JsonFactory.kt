@@ -8,12 +8,12 @@ import kotlinx.serialization.json.*
 
 class JsonFactory {
     companion object {
-        fun createErrMessage(message: String): JsonObject{
-            return JsonObject(
+        fun createErrMessage(message: String): String{
+            return createFullMessage("showErr", JsonObject(
                 buildMap {
-                    put("err", Json.encodeToJsonElement(message))
+                    put("message", Json.encodeToJsonElement(message))
                 }
-            )
+            ))
         }
         fun createMessage(key: String, message: String): JsonObject{
             return JsonObject(
@@ -35,8 +35,8 @@ class JsonFactory {
 
         fun createDataBroadcast(): String{
             return Json.encodeToJsonElement(Message(
-                actionName = "MeasurementBroadcast",
-                payload = createMessage("publishMeasurementData", DataStore.measurements.toString()),
+                actionName = "publishMeasurement",
+                payload = createMessage("data", DataStore.measurements.toString()),
                 key = ""
             )).toString()
         }

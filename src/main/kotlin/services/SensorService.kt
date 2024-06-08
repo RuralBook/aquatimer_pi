@@ -6,6 +6,7 @@ import com.tobiask.settings
 import com.tobiask.debugUtil
 import com.tobiask.model.Measurement
 import com.tobiask.dataStores.DataStore
+import com.tobiask.model.voltageToMoisture
 import com.tobiask.utils.JsonFactory
 import com.tobiask.webSocketService
 import kotlinx.coroutines.delay
@@ -29,7 +30,7 @@ class SensorService {
                         debugUtil.log("[MEASUREMENT INFO] Added AVG to List (SUM: ${DataStore.tempMeasurements} | DIVIDER: ${DataStore.divider})")
                         val newMeasurement = Measurement(
                             time = LocalTime.now().toString(),
-                            measurement = DataStore.tempMeasurements/ DataStore.divider
+                            measurement =  voltageToMoisture(DataStore.tempMeasurements/ DataStore.divider)
                         )
                         DataStore.measurements.add(newMeasurement)
                         DataStore.reset();

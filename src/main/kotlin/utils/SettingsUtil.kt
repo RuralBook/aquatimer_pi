@@ -43,7 +43,7 @@ class SettingsUtil {
         }
         fun setNewIdeal(passedIdeal: String){
             try {
-                val newIdeal = passedIdeal.trim('"').toDouble()
+                val newIdeal = passedIdeal.trim('"').toInt()
                 settings.ideal = newIdeal
             }catch (e: Exception){
                 debugUtil.log(e.toString())
@@ -51,7 +51,7 @@ class SettingsUtil {
         }
         fun setNewThreshold(passedThreshold: String){
             try {
-                val newThreshold = passedThreshold.trim('"').toDouble()
+                val newThreshold = passedThreshold.trim('"').toInt()
                 settings.ideal = newThreshold
             }catch (e: Exception){
                 debugUtil.log(e.toString())
@@ -63,13 +63,9 @@ class SettingsUtil {
         fun broadcastNewTimedModeSettings(){
             val jsonObject = JsonObject(
                 buildMap {
-                    put("intervalTimer", Json.encodeToJsonElement(settings.Timedinterval))
-
-                    //put("wateringDurationManually", Json.encodeToJsonElement(settings.wateringDurationManually))
+                    put("timerInterval", Json.encodeToJsonElement(settings.Timedinterval))
 
                     put("wateringDurationTimed", Json.encodeToJsonElement(settings.wateringDurationTimed))
-
-                    //put("measurementTimer", Json.encodeToJsonElement(settings.measurementTimer))
                 }
             )
             val broadcastMessage = JsonFactory.createFullMessage("publishTimedModeSettings", jsonObject)
